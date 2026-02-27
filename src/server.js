@@ -1,7 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const path = require('path');
 
 dotenv.config();
 
@@ -19,13 +18,31 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/upload', uploadRoutes);
+// Root route
+app.get('/', (req, res) => {
+    res.json({
+        message: 'File Upload API is running',
+        health: '/api/health',
+        timestamp: new Date().toISOString()
+    });
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// 404 handler
+app.use((req, res) => {
+    console.log('404 for:', req.method, req.originalUrl);
+    res.status(404).json({
+        success: false,
+        message: `Route ${req.originalUrl} not found`
+    });
 });
 
 // Error handler
